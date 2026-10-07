@@ -393,3 +393,24 @@ describe("versioned persistence", () => {
     },
   );
 });
+
+describe("normalized record identity", () => {
+  it("rejects whitespace and case variants of existing companies and contacts", () => {
+    const s = seed();
+    expect(() =>
+      saveRecord(s, "company", {
+        ...s.companies[0],
+        id: "duplicate-company",
+        name: ` ${s.companies[0].name.toUpperCase()} `,
+      }),
+    ).toThrow("A company with that name already exists.");
+    expect(() =>
+      saveRecord(s, "contact", {
+        ...s.contacts[0],
+        id: "duplicate-contact",
+        email: ` ${s.contacts[0].email.toUpperCase()} `,
+      }),
+    ).toThrow("A contact with that email already exists.");
+    expect(saveRecord(s, "company", s.companies[0]).companies).toHaveLength(12);
+  });
+});

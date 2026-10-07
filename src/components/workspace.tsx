@@ -67,8 +67,19 @@ export function WorkspaceApp() {
   useEffect(() => {
     const sync = () => {
       const page = location.hash.slice(1);
-      if ([...screens.map((s) => s.id), "settings"].includes(page))
-        setScreen(page as Screen);
+      const next = [...screens.map((s) => s.id), "settings"].includes(page)
+        ? (page as Screen)
+        : "today";
+      setScreen(next);
+      setSelected(null);
+      setEditor(null);
+      setCommand(false);
+      setMobile(false);
+      setImportKind(null);
+      setArchive(null);
+      setReset(false);
+      setHandoff(null);
+      window.scrollTo({ top: 0, behavior: "auto" });
     };
     sync();
     window.addEventListener("hashchange", sync);

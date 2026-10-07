@@ -46,4 +46,20 @@ npm run test:e2e
 node scripts/capture-showcase.mjs
 ```
 
-Playwright reuses the preview at `http://127.0.0.1:3000`. If nothing is listening there, its configuration starts the development server instead. The HTML report is generated in `playwright-report/`; traces/screenshots are retained for failures. Those generated directories are ignored by Git.
+Playwright builds and starts its own production preview at `http://127.0.0.1:3307`. Set `RELAY_TEST_URL` to reuse an explicit standalone preview. The HTML report is generated in `playwright-report/`; traces/screenshots are retained for failures. Those generated directories are ignored by Git.
+
+## Independent review — October 7, 2026
+
+The initial 44 unit tests and 18 Chromium tests were independently rerun and passed.
+The reviewed source passes 45 unit tests and 21 Chromium tests against its own rebuilt
+production export. Lint, TypeScript and production build pass. Added regression coverage:
+
+- Back/Forward to the initial URL returns to Today, closes unfinished dialogs, and preserves data.
+- Trimmed, case-insensitive company/contact identities cannot bypass duplicate checks.
+- Cancelled forms and draft notes do not leak into another record; empty searches render guidance.
+- Returning from CSV review requires a fresh fictional-data confirmation; filtered exported
+  formulas are apostrophe-prefixed text, and imported records survive reload.
+
+The dependency audit independently confirms the same five development-only findings;
+registry versions remain braces 3.0.3, micromatch 4.0.8 and eslint-config-next 16.4.0.
+A framework downgrade would not be a safe fix. Production audit: zero advisories.

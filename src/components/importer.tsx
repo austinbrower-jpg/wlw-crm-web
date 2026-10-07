@@ -299,6 +299,7 @@ export function Importer({
                 ? () => {
                     setPreview(null);
                     setError("");
+                    setFictional(false);
                   }
                 : onClose
             }
