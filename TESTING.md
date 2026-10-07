@@ -51,7 +51,7 @@ Playwright builds and starts its own production preview at `http://127.0.0.1:330
 ## Independent review — October 7, 2026
 
 The initial 44 unit tests and 18 Chromium tests were independently rerun and passed.
-The reviewed source passes 45 unit tests and 21 Chromium tests against its own rebuilt
+The reviewed source passes 45 unit tests and 22 Chromium tests against its own rebuilt
 production export. Lint, TypeScript and production build pass. Added regression coverage:
 
 - Back/Forward to the initial URL returns to Today, closes unfinished dialogs, and preserves data.
@@ -63,3 +63,5 @@ production export. Lint, TypeScript and production build pass. Added regression 
 The dependency audit independently confirms the same five development-only findings;
 registry versions remain braces 3.0.3, micromatch 4.0.8 and eslint-config-next 16.4.0.
 A framework downgrade would not be a safe fix. Production audit: zero advisories.
+
+Mounted-route mobile accessibility review additionally found and fixed the icon-only search button losing its accessible name. The source accessibility suite now scans all main screens and the record drawer at both 390 and 1440 pixels.

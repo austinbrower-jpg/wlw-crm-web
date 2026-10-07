@@ -259,7 +259,11 @@ export function WorkspaceApp() {
             <ChevronRight size={13} />
             <strong>{currentLabel}</strong>
           </div>
-          <button className="global-search" onClick={() => setCommand(true)}>
+          <button
+            className="global-search"
+            aria-label="Search records and actions"
+            onClick={() => setCommand(true)}
+          >
             <Search size={16} />
             <span>Search anything…</span>
             <kbd>⌘ K</kbd>
