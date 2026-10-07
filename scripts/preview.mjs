@@ -3,6 +3,7 @@ import { readFile, stat } from "node:fs/promises";
 import { resolve, extname, sep } from "node:path";
 const root = resolve("out");
 const port = Number(process.env.PORT ?? 3000);
+const basePath = process.env.RELAY_BASE_PATH ?? "";
 const types = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
@@ -25,9 +26,17 @@ createServer(async (req, res) => {
       res.end();
       return;
     }
-    const pathname = decodeURIComponent(
+    let pathname = decodeURIComponent(
       new URL(req.url ?? "/", "http://127.0.0.1").pathname,
     );
+    if (basePath) {
+      if (pathname !== basePath && !pathname.startsWith(basePath + "/")) {
+        res.writeHead(404);
+        res.end("Not found");
+        return;
+      }
+      pathname = pathname.slice(basePath.length) || "/";
+    }
     const file = resolve(
       root,
       "." + (pathname === "/" ? "/index.html" : pathname),
@@ -52,5 +61,5 @@ createServer(async (req, res) => {
     );
   }
 }).listen(port, "127.0.0.1", () =>
-  console.log(`Relay CRM preview: http://127.0.0.1:${port}`),
+  console.log(`Relay CRM preview: http://127.0.0.1:${port}${basePath}`),
 );

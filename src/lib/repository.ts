@@ -47,6 +47,26 @@ export function saveRecord(
     } as const
   )[kind];
   const old = collection(s, kind).find((r) => r.id === entity.id);
+  if (
+    kind === "company" &&
+    "name" in entity &&
+    s.companies.some(
+      (c) =>
+        c.id !== entity.id &&
+        c.name.toLowerCase() === entity.name.toLowerCase(),
+    )
+  )
+    throw new Error("A company with that name already exists.");
+  if (
+    kind === "contact" &&
+    "email" in entity &&
+    s.contacts.some(
+      (c) =>
+        c.id !== entity.id &&
+        c.email.toLowerCase() === entity.email.toLowerCase(),
+    )
+  )
+    throw new Error("A contact with that email already exists.");
   const next = {
     ...s,
     [key]: old

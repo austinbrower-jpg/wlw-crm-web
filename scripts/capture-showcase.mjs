@@ -7,7 +7,7 @@ const context = await browser.newContext({
   timezoneId: "America/Chicago",
 });
 const page = await context.newPage();
-await page.goto("http://127.0.0.1:3000");
+await page.goto(process.env.RELAY_TEST_URL ?? "http://127.0.0.1:3307");
 await page
   .getByRole("heading", { name: "Let’s move things forward." })
   .waitFor();

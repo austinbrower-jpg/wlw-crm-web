@@ -88,3 +88,19 @@ Kanban uses native desktop drag-and-drop; stage selectors provide the touch and 
 See [TESTING.md](TESTING.md) for the final results and limitations. Screenshots for every screen at all four target widths are in `screenshots/`, plus calendar and mobile form captures. `screenshots/showcase-today.png`, `screenshots/record-drawer-1440.png`, and `screenshots/showcase-mobile.png` are viewport captures suitable for your project page. Use [PORTFOLIO.md](PORTFOLIO.md) for editable project copy.
 
 The current dependency audit reports five transitive **development-tool-only** findings in the Next.js ESLint → fast-glob → micromatch → braces chain. The installed upstream braces release has no patched version. The production dependency audit is clean. Do not use dependency audit “force” fixes that downgrade the application framework; recheck upstream tooling before broader development use.
+
+## Portfolio deployment
+
+Build a namespaced export with `RELAY_BASE_PATH=/demos/relay npm run build`.
+The prefix is compiled into the assets and favicon; rebuilding is required to change it.
+Serve that build locally with `RELAY_BASE_PATH=/demos/relay PORT=3307 npm run preview`.
+The website integration serves the exported HTML directly, outside its React layout,
+authentication middleware, intake forms, and analytics. Storage remains isolated under
+`relay-crm.workspace.v1`; the demo never reads or writes website cookies or storage keys.
+Its static files and source commit are recorded in the website's hashed deployment manifest.
+Update that distribution using the website's documented `relay:update` command from a clean,
+committed CRM checkout. Never edit the website's generated demo files by hand.
+
+Browser tests now build and start their own production export on port 3307; an explicit
+`RELAY_TEST_URL` can target an already running standalone preview. This avoids accidentally
+reusing a different app on port 3000.

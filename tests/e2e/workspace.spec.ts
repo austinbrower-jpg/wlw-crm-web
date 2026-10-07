@@ -600,3 +600,101 @@ test("mobile navigation returns to the top and native date fields create a usabl
     page.getByRole("button", { name: "Mobile date follow-up", exact: true }),
   ).toBeVisible();
 });
+
+test("Back and Forward follow the URL and dismiss unfinished dialogs", async ({
+  page,
+}) => {
+  await open(page);
+  await go(page, "Deals");
+  await page.getByRole("button", { name: "New deal", exact: true }).click();
+  await page.getByLabel("Deal name").fill("Unsaved opportunity");
+  await page.goBack();
+  await expect(page.locator(".screen-today")).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  expect((await state(page)).deals).toHaveLength(18);
+  await page.goForward();
+  await expect(page.locator(".screen-deals")).toBeVisible();
+  await page.reload();
+  await expect(page.locator(".screen-deals")).toBeVisible();
+});
+
+test("duplicate names are normalized and cancelled forms and notes do not leak", async ({
+  page,
+}) => {
+  await open(page);
+  await go(page, "Companies");
+  await page.getByRole("button", { name: "New company", exact: true }).click();
+  await page.getByLabel("Company name").fill(" JUNIPER STUDIO ");
+  await page
+    .getByRole("button", { name: "Create company", exact: true })
+    .click();
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
+    "already exists",
+  );
+  expect((await state(page)).companies).toHaveLength(12);
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await page.getByRole("button", { name: "New company", exact: true }).click();
+  await expect(page.getByLabel("Company name")).toHaveValue("");
+  await close(page);
+  await search(page, "Brand & website refresh");
+  await page.getByLabel("Activity note").fill("Unsubmitted note for this deal");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Juniper Studio", exact: true })
+    .click();
+  await expect(page.getByLabel("Activity note")).toHaveValue("");
+  await close(page);
+  expect(
+    (await state(page)).activities.some((a: { text: string }) =>
+      a.text.includes("Unsubmitted"),
+    ),
+  ).toBe(false);
+  await page
+    .getByPlaceholder("Search companies…")
+    .fill("nothing-matches-this-query");
+  await expect(page.locator(".empty-state")).toBeVisible();
+});
+
+test("import back requires a fresh confirmation and formula export remains text", async ({
+  page,
+}) => {
+  await open(page);
+  await go(page, "Companies");
+  await page.getByRole("button", { name: "Import", exact: true }).click();
+  await page.getByLabel("Choose CSV file").setInputFiles({
+    name: "formula.csv",
+    mimeType: "text/csv",
+    buffer: Buffer.from("name\n=1+1"),
+  });
+  await page
+    .getByRole("button", { name: "Preview import", exact: true })
+    .click();
+  await page
+    .getByLabel("I confirm this file contains fictional demo data.")
+    .check();
+  await page.getByRole("button", { name: "Back to mapping" }).click();
+  await page
+    .getByRole("button", { name: "Preview import", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Import 1 records" }),
+  ).toBeDisabled();
+  await page
+    .getByLabel("I confirm this file contains fictional demo data.")
+    .check();
+  await page.getByRole("button", { name: "Import 1 records" }).click();
+  await page.getByPlaceholder("Search companies…").fill("=1+1");
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export", exact: true }).click();
+  const { readFile } = await import("node:fs/promises");
+  const file = await download;
+  const csv = await readFile((await file.path())!, "utf8");
+  expect(csv).toContain('"\'=1+1"');
+  expect(csv).not.toContain("Juniper Studio");
+  await page.reload();
+  expect(
+    (await state(page)).companies.some(
+      (c: { name: string }) => c.name === "=1+1",
+    ),
+  ).toBe(true);
+});
